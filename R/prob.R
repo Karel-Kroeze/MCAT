@@ -24,6 +24,7 @@ prob <- function(theta=0,items=genItembank(model=model),model="GPCM"){
   a <- items$alpha
   b <- items$beta
   K <- nrow(b)
+  #print(c(a,theta))
   at <- apply(a * drop(theta),1,sum)
   
   # Three Paramater Logistic (MultiDim) (Segall, 1996)
@@ -69,7 +70,7 @@ prob <- function(theta=0,items=genItembank(model=model),model="GPCM"){
 
 
 #### Everything below here is testing code. TODO: remove!
-testit <- function(model="GRM",alpha=1){
+testit <- function(model="GRM",alpha=1,extra=F,s.plot=F){
   x <- seq(-3,3,.1)
   item <- genItembank(Q=1,K=1,M=list(min=3,max=3),model=model)
   
@@ -86,23 +87,28 @@ testit <- function(model="GRM",alpha=1){
   
   for (i in 1:length(x)){
     y[i,] <- prob(x[i],item,model=model)
-    if(model =="G3PLM") y2[i,] <- Pi(x[i],matrix(c(item$alpha,item$beta,item$guessing,1),ncol=4))$Pi
-    if(all(model!="SM",model!="G3PLM")) y2[i,] <- Pi(x[i],matrix(c(item$alpha,item$eta),ncol=4),model=model)$Pi
-    if(model=='GPCM') y3[i,] <- unlist(p.(x[i],list(a=item$alpha,b=item$beta,m=3)))
+    if(model =="G3PLM" & !s.plot) y2[i,] <- Pi(x[i],matrix(c(item$alpha,item$beta,item$guessing,1),ncol=4))$Pi
+    if(all(model!="SM",model!="G3PLM",!s.plot)) y2[i,] <- Pi(x[i],matrix(c(item$alpha,item$eta),ncol=4),model=model)$Pi
+    if(model=='GPCM' & !s.plot) y3[i,] <- unlist(p.(x[i],list(a=item$alpha,b=item$beta,m=3)))
   }
   
   par(mfrow=c(switch(model,"GPCM"=3,"SM"=1,2),1))
+  xlab = "\theta"
+  if(s.plot) par(mfrow=c(1,1))
   matplot(x,y,type='l',main=paste("MCAT",model,sep=" - "))
-  if(model!="SM") matplot(x,y2,type='l',main=paste("catR",model,sep=" - "))
-  if(model=='GPCM') matplot(x,y3,type='l',main=paste("MCAT(old)",model,sep=" - "))
+  if(model!="SM"& !s.plot) matplot(x,y2,type='l',main=paste("catR",model,sep=" - "))
+  if(model=='GPCM'& !s.plot) matplot(x,y3,type='l',main=paste("MCAT(old)",model,sep=" - "))
+  
+  if(extra) print(ex <- cbind(y[,1],y2[,1],y3[,1]))
+  if(extra) all(apply(ex,1,function(x) {
+    
+  }))
 }
 
-# testit("SM",1)
-# all.equal(apply(prob(rep(0,3),model="SM",items=genItembank(model="SM",Q=3,K=5000)),1,sum,na.rm=T),rep(1,5000))
+testit("G3PLM",1,F,T)
 # 
 # Q <- 1
 # model <- "G3PLM"
 # items <- genItembank(model=model,Q=Q,K=5)
 # prob(theta=rep(0,Q),model=model,items=items)
 # item <- genItembank(model="G3PLM",Q=1,K=1)
-

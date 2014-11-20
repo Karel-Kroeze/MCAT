@@ -17,29 +17,28 @@
 eapEst <- function(items, resp, model, prior, debug = F, ip = 4){
   # initialize Gauss quadrature points
   # TODO: This only needs doing once for the whole test, should happen on test init when any estimator is set to EAP.
-  GH <- init.gauss(ip,prior) 
+  GH <- init.gauss(ip,prior)
   
   # Evaluate that integral!
   # TODO: Somehow this ALWAYS returns around .3, regardless of true theta.
-  return(eval.gauss(L,prior,GH,items=items,resp=resp,model=model))
+  return(eval.gauss(LL,GH,items=items,resp=resp,model=model))
 }
 
 
 # Likelihood
-L <- function(theta,items,resp,model){
+LL <- function(theta,items,resp,model){
   P <- prob(theta,items,model)
   
   if(model == "G3PLM"){
-    out <- sum(log(P[,1]^(1-resp) * P[,2]^(resp)))
-  }
-  else {
+    out <- sum(log(P[,1]^(1-resp)) + log(P[,2]^(resp)))
+  } else {
     out <- 0
     j <- resp+1
     for(i in 1:nrow(items$beta)){
       out <- out + log(P[i,j[i]])
     }
   }
-  return(exp(out))
+  return(out)
 }
 
 
@@ -63,46 +62,34 @@ L <- function(theta,items,resp,model){
 init.gauss <- function(ip=10,prior){
   
   Q <- ncol(prior)
-  
-  # set ip lower on high dimensional problems (10^10 takes forever to calc ;)).
-  # TODO: decide if I want this safeguard...
-  #   if(!force){
-  #     ip.max <- 12 - 2*Q
-  #     if (ip.max < 2){ stop("Too many dimensions for EAP to be run in a reasonable time. Run with force=TRUE to override.") }
-  #     if (ip.max < ip){ 
-  #       cat('GH IP set to',ip.max,'\n');
-  #       ip <- ip.max 
-  #     }
-  #   }
-  
-  
+    
   # require/install fastGHquad (will be package dependancy).
   # TODO: Implement dependency properly.
   if(!require(fastGHQuad)){ install.packages('fastGHQuad'); require(fastGHQuad)}
   
   # get quadrature points, create grid
   x <- fastGHQuad::gaussHermiteData(ip)
+  x$x <- x$x * 2^.5
   # (if anyone knows an easy way to assign a single vector x times to x list elements, please tell me. )
   X <- as.matrix(expand.grid(lapply(apply(replicate(Q,x$x),2,list),unlist)))
+
   
   # calculate weights
+  x$w <- x$w / pi^.5
   # same as above, roundabout way to get the combn weights for each combination of quad points
   g <- as.matrix(expand.grid(lapply(apply(replicate(Q,x$w),2,list),unlist)))
   # combined weight is the product of the individual weights
   W <- apply(g,1,prod)
   
   # compute lambda (eigen decomposition covar matrix)
-  lambda <- with(eigen(prior), vectors %*% diag(sqrt(values)))
+  lambda <- with(eigen(prior), vectors %*% diag(sqrt(values),Q,Q))
   
-  # apply mv normal pdf error function 
-  W. <- W * pi^(-Q/2)
   # account for correlation
   X. <- t(lambda %*% t(X))
   
   # TODO: account for mu != 0.
-  return(list(X=X.,W=W.,ip=ip))
+  return(list(X=X.,W=W,ip=ip))
 }
-
 
 #' Evaluation of multivariate normal distributed integral
 #' 
@@ -126,7 +113,7 @@ init.gauss <- function(ip=10,prior){
 #' # (Since mean is currently fixed at zero, this is always zero.)
 #' (integral <- eval.gauss(Q=3,X=quadPoints))
 #' round(integral)
-eval.gauss <- function(FUN = function(x) 1,prior,X=NULL,W=NULL,...){
+eval.gauss <- function(FUN = function(x) 0,X=NULL,W=NULL,...){
   if (is.list(X)){
     W <- X$W
     X <- X$X
@@ -135,19 +122,27 @@ eval.gauss <- function(FUN = function(x) 1,prior,X=NULL,W=NULL,...){
   if (is.null(X) | is.null(W)) stop("Quadrature points and weights are required. See init.gauss.", call.=F)
   
   ipq <- length(W)
-  aux <- numeric(ipq)
+  f <- numeric(ipq)
+  z  <- -1e10
   
   # main loop
   for (i in 1:ipq){
-    aux[i] <- FUN(X[i,],...) * W[i]
+    f[i] <- FUN(X[i,],...) + log(W[i])
   }
+
+  # numerical stability
+  #m <- max(f)
+  #f <- exp(f - m)
+  z <- 700 - max(z,f)
+  f <- exp(f + z)
   
   # normalizing constant
-  p1 <- sum(aux)
+  p1 <- sum(f)
   
   # multiply integrals with x values, sum over columns, divide by normalizing constant.
-  out <- apply((aux*X)/p1,2,sum)
+  out <- apply((f*X)/p1,2,sum)
   
   # return computed integral.
   return(out)
 }
+
