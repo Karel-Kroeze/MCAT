@@ -3,6 +3,7 @@
 
 # Example code in package build process
 *-Ex.R
+.Rproj
 
 # R data files from past sessions
 .Rdata
@@ -19,7 +20,8 @@
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
