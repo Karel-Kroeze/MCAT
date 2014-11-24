@@ -14,21 +14,20 @@
 #' @param quad Integer, number of quadrature points \bold{per dimension}. Note that the total number of quadrature points is \code{quad^Q}, where Q is the number of latent dimensions.
 #' @return estimate A vector of latent ability estimates.
 #' @seealso eapSE.
-eapEst <- function(items, resp, model, prior, debug = F, ip = 4){
+eapEst <- function(items, resp, model, prior, ip = 4, debug = FALSE,...){
   # initialize Gauss quadrature points
   # TODO: This only needs doing once for the whole test, should happen on test init when any estimator is set to EAP.
   GH <- init.gauss(ip,prior)
   
   # Evaluate that integral!
   # TODO: Somehow this ALWAYS returns around .3, regardless of true theta.
-  return(eval.gauss(LL,GH,items=items,resp=resp,model=model))
+  return(eval.gauss(LL,GH,items=items,resp=resp,model=model,debug=debug))
 }
 
 
 # Likelihood
 LL <- function(theta,items,resp,model){
   P <- prob(theta,items,model)
-  
   if(model == "G3PLM"){
     out <- sum(log(P[,1]^(1-resp)) + log(P[,2]^(resp)))
   } else {
@@ -113,7 +112,7 @@ init.gauss <- function(ip=10,prior){
 #' # (Since mean is currently fixed at zero, this is always zero.)
 #' (integral <- eval.gauss(Q=3,X=quadPoints))
 #' round(integral)
-eval.gauss <- function(FUN = function(x) 0,X=NULL,W=NULL,...){
+eval.gauss <- function(FUN = function(x) 0,X=NULL,W=NULL,debug=FALSE,...){
   if (is.list(X)){
     W <- X$W
     X <- X$X
@@ -123,26 +122,44 @@ eval.gauss <- function(FUN = function(x) 0,X=NULL,W=NULL,...){
   
   ipq <- length(W)
   f <- numeric(ipq)
-  z  <- -1e10
   
   # main loop
   for (i in 1:ipq){
     f[i] <- FUN(X[i,],...) + log(W[i])
   }
-
-  # numerical stability
-  #m <- max(f)
-  #f <- exp(f - m)
-  z <- 700 - max(z,f)
-  f <- exp(f + z)
+  
+  # some numerical safeguards
+  m <- 700 - max(f)
+  f <- f + m
+  
+  # back to normal scale
+  f <- exp(f)
   
   # normalizing constant
   p1 <- sum(f)
   
   # multiply integrals with x values, sum over columns, divide by normalizing constant.
-  out <- apply((f*X)/p1,2,sum)
+  out <- colSums(f * X) / p1
+  
+  # debug plot
+  if(debug & ncol(X) == 2){
+    ip <- ipq^(1/ncol(X))
+    nL <- matrix(f,ip)
+    nL <- t(nL[,ncol(nL):1])
+    x <- sort(unique(X[,1]))
+    y <- sort(unique(X[,2]))
+    r <- 2
+    contour(x=x,y=y,z=nL,xlim=out[1]+c(-r,r),ylim=out[2]+c(-r,r),axes=FALSE)
+    axis(side = 1, at = round(x,2))
+    axis(side = 2, at = round(y,2))
+    points(out[1],out[2],lwd=2,col='red')
+    box()
+  }
+  if(debug & ncol(X) == 1){
+    plot(X,f,type='l')
+    print(f)
+  }
   
   # return computed integral.
   return(out)
 }
-

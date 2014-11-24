@@ -14,11 +14,14 @@
 #' @param ... Passed on to eapEst, ignored if method is not "EAP". See \code{\link{eapEst}} for details.
 #' @return list with two entries; theta contains the current theta estimate, and SE the standard error of the estimate.
 #' @export
-est <- function(theta,items,resp,method = "BM",model = "GPCM", prior = NULL, threshold = 1e-4, max.iter = 10,debug = FALSE,...){
+est <- function(theta, items, resp, 
+                method = "BM", model = "GPCM",
+                prior = NULL, threshold = 1e-4, max.iter = 10,
+                debug = FALSE, ip = 10,...){
   if (method == "ML") prior <- NULL
   if (method == "MAP") method <- "BM"
   
-  if (method == "EAP") out <- eapEst(items,resp,model,prior,...)
+  if (method == "EAP") out <- eapEst(items,resp,model,prior,ip,debug,...)
   else {
     iter <- 0
     delta <- 1
@@ -33,7 +36,7 @@ est <- function(theta,items,resp,method = "BM",model = "GPCM", prior = NULL, thr
     }
     out <- theta
   }
-  return(out)
+  return(as.vector(out))
 }
 
 ############# TESTING CODE>
@@ -45,31 +48,31 @@ est <- function(theta,items,resp,method = "BM",model = "GPCM", prior = NULL, thr
 # EAP works in theory, but has some significant numerical issues. At higher numbers of items the estimate approaches 1.157, not sure why that number.
 # Annoyingly, it is never the same as catR. catR's numerical integration is very simple, but it isn't THAT far off...
 #### Test estimators.
-Q <- 1
-theta <- rep(0,Q)
-model <- "GRM"
-method <- "BM"
-fix.alpha <- T # Set all alpha to 1?
-show.newton <- T # Show Newton-Rhapson iteration steps?
-K <- 25
-
-max.iter <- 1000
-threshold <- 1e-4
-xmodel <- switch(model,"G3PLM"=NULL,model)
-items <- genItembank(model=model,K=K,Q=Q,)
-if(fix.alpha) items$alpha <- matrix(1,K,Q)
-resp <- ans(theta,items,model)
-prior <- diag(Q) 
-xitems <- switch(model,
-                 "G3PLM"=cbind(items$alpha,items$beta,items$guessing,1), # 4PLM with upper asymptote = 1
-                 "GPCM"=cbind(items$alpha,items$eta),
-                 cbind(items$alpha,items$beta))
-
-cat(method," estimates for ",model," model (",K," items):\n",sep="")
-cat("TRUE:",theta,"\n")
-cat("MCAT:",est(theta,items,resp,method,model,prior,threshold,max.iter,debug=show.newton),"\n")
-if(Q == 1) cat("catR:",thetaEst(xitems,resp,xmodel,1,method),"\n")
-
+# Q <- 1
+# theta <- rep(0,Q)
+# model <- "GRM"
+# method <- "BM"
+# fix.alpha <- T # Set all alpha to 1?
+# show.newton <- T # Show Newton-Rhapson iteration steps?
+# K <- 25
+# 
+# max.iter <- 1000
+# threshold <- 1e-4
+# xmodel <- switch(model,"G3PLM"=NULL,model)
+# items <- genItembank(model=model,K=K,Q=Q,)
+# if(fix.alpha) items$alpha <- matrix(1,K,Q)
+# resp <- ans(theta,items,model)
+# prior <- diag(Q) 
+# xitems <- switch(model,
+#                  "G3PLM"=cbind(items$alpha,items$beta,items$guessing,1), # 4PLM with upper asymptote = 1
+#                  "GPCM"=cbind(items$alpha,items$eta),
+#                  cbind(items$alpha,items$beta))
+# 
+# cat(method," estimates for ",model," model (",K," items):\n",sep="")
+# cat("TRUE:",theta,"\n")
+# cat("MCAT:",est(theta,items,resp,method,model,prior,threshold,max.iter,debug=show.newton),"\n")
+# if(Q == 1) cat("catR:",thetaEst(xitems,resp,xmodel,1,method),"\n")
+# 
 
 ### timings. Ouch, catR is up to 10 times faster...
 # TODO: Look into a native newton-rhapson or something similar. Rootfinding sadly won't work?
