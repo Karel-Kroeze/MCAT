@@ -23,7 +23,7 @@ deriv <- function(theta,items,resp,model="GPCM",prior=NULL){
   d <- D <- numeric(K)
   
   # Set up the various derivatives.
-  if (model == "G3PLM"){
+  if (model == "3PL"){
     # Segall (MCAT book, 1996, p.71)
     P <- prob(theta,items,model)
     c <- items$guessing

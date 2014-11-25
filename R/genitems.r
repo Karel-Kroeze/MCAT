@@ -1,6 +1,6 @@
 #' Generate itembank.
 #' 
-#' Generates a Q-dimensional itembank under the Graded Response Model (GRM), Sequential Model (SM), Generalized Partial Credit Model (GPCM) or Generalized Three Parameter Logistic Model (G3PLM).
+#' Generates a Q-dimensional itembank under the Graded Response Model (GRM), Sequential Model (SM), Generalized Partial Credit Model (GPCM) or Generalized Three Parameter Logistic Model (3PL).
 #' 
 #' Alpha parameters may be correlated, and are \code{> 0}. 
 #' This is accomplished by an initial draw from a multivariate normal distribution with the given covariance matrix. 
@@ -16,8 +16,8 @@
 #' @param c list(min, max); named list of distribution parameters for the guessing parameter, c.
 #'     Guessing parameters are drawn from a continuous uniform distribution with minimum \code{a} and maximum \code{b}. 
 #'     Default is list(min=0,max=0) for all \code{c} = 0.
-#'     Only used for G3PLM, ignored in all other models.
-#' @param M list(min, max); named list of two integer values for the minimum and maximum values for a discrete uniform draw of number of categories per item. Ignored or G3PLM.
+#'     Only used for 3PL, ignored in all other models.
+#' @param M list(min, max); named list of two integer values for the minimum and maximum values for a discrete uniform draw of number of categories per item. Forced to 1,1 in 3PL.
 #' @return Itembank. A list with class MCAT.items of parameters simulated under the given model.
 #'     Additionally the itembank includes a list with options used to create it.
 #' @export
@@ -44,7 +44,7 @@ genItembank <- function(Q=2,K=50,model='GPCM',covar=diag(Q),a=list(method="norma
   
   #beta/eta/m
   m <- integer(K)
-  if(model=="G3PLM") M <- list(min=1,max=1)
+  if(model=="3PL") M <- list(min=1,max=1)
   pars <- matrix(NA,ncol=M$max,nrow=K)
   if(model=="GPCM") pars2 <- pars
   for (i in 1:K){
@@ -66,7 +66,7 @@ genItembank <- function(Q=2,K=50,model='GPCM',covar=diag(Q),a=list(method="norma
   }
   
   # guessing (because why not?), in G3PLM only.
-  if (model=="G3PLM"){
+  if (model=="3PL"){
     out$guessing <- runif(K,c$a,c$b)
   }
   

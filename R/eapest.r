@@ -8,7 +8,7 @@
 #' @param theta Numeric (vector), initial theta estimate. Defaults to a null vector of length equal to the number of latent dimensions.
 #' @param items Itembank, or a subset of an Itembank. See \code{\link{genItembank}}.
 #' @param resp Response pattern, see \code{\link{ans}}.
-#' @param model String, valid values are "G3PLM", "GRM", "SM" or "GPCM". Defaults to "GPCM".
+#' @param model String, valid values are "3PL", "GRM", "SM" or "GPCM". Defaults to "GPCM".
 #' @param prior Numeric (matrix), prior covariance.
 #' @param debug Logical. Should debug information be shown?
 #' @param quad Integer, number of quadrature points \bold{per dimension}. Note that the total number of quadrature points is \code{quad^Q}, where Q is the number of latent dimensions.
@@ -28,7 +28,7 @@ eapEst <- function(items, resp, model, prior, ip = 4, debug = FALSE,...){
 # Likelihood
 LL <- function(theta,items,resp,model){
   P <- prob(theta,items,model)
-  if(model == "G3PLM"){
+  if(model == "3PL"){
     out <- sum(log(P[,1]^(1-resp)) + log(P[,2]^(resp)))
   } else {
     out <- 0

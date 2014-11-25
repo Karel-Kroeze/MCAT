@@ -8,7 +8,7 @@
 #' @param items Itembank, see \code{\link{genItembank}}.
 #' @param resp Response pattern, see \code{\link{ans}}.
 #' @param method String, valid values are "ML", "EAP", and "MAP" or "BM". Defaults to "BM".
-#' @param model String, valid values are "G3PLM", "GRM", "SM" or "GPCM". Defaults to "GPCM".
+#' @param model String, valid values are "3PL", "GRM", "SM" or "GPCM". Defaults to "GPCM".
 #' @param Sigma0 Numeric (matrix), prior covariance. Only required when method != "ML".
 #' @param debug Logical. Should debug information be shown?
 #' @param ... Passed on to eapEst, ignored if method is not "EAP". See \code{\link{eapEst}} for details.
@@ -42,7 +42,7 @@ est <- function(theta, items, resp,
 ############# TESTING CODE>
 # SM "works" but only for theta <= 0, and underestimates theta. Positive theta explodes. So really, it doesn't work.
 # GPCM is close to a decimal point, but differs slightly.
-# GRM and G3PLM (4PL) are spot-on.
+# GRM and 3PL (4PL) are spot-on.
 # Both ML and BM (do not) work in the same situations. 
 #
 # EAP works in theory, but has some significant numerical issues. At higher numbers of items the estimate approaches 1.157, not sure why that number.
@@ -58,13 +58,13 @@ est <- function(theta, items, resp,
 # 
 # max.iter <- 1000
 # threshold <- 1e-4
-# xmodel <- switch(model,"G3PLM"=NULL,model)
+# xmodel <- switch(model,"3PL"=NULL,model)
 # items <- genItembank(model=model,K=K,Q=Q,)
 # if(fix.alpha) items$alpha <- matrix(1,K,Q)
 # resp <- ans(theta,items,model)
 # prior <- diag(Q) 
 # xitems <- switch(model,
-#                  "G3PLM"=cbind(items$alpha,items$beta,items$guessing,1), # 4PLM with upper asymptote = 1
+#                  "3PL"=cbind(items$alpha,items$beta,items$guessing,1), # 4PLM with upper asymptote = 1
 #                  "GPCM"=cbind(items$alpha,items$eta),
 #                  cbind(items$alpha,items$beta))
 # 

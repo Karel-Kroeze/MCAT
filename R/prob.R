@@ -28,7 +28,7 @@ prob <- function(theta=0,items=genItembank(model=model),model="GPCM"){
   at <- apply(a * drop(theta),1,sum)
   
   # Three Paramater Logistic (MultiDim) (Segall, 1996)
-  if(model=="G3PLM"){
+  if(model=="3PL"){
     c <- items$guessing
     aux <- numeric(K)
     for (i in 1:K){
@@ -81,14 +81,14 @@ testit <- function(model="GRM",alpha=1,extra=F,s.plot=F){
   if(model!="GPCM"){
     item$beta <- item$eta
   }
-  if(model=="G3PLM") item$beta <- matrix(0)
+  if(model=="3PL") item$beta <- matrix(0)
   
   y  <- y2 <- y3 <- matrix(0,length(x),4)
   
   for (i in 1:length(x)){
     y[i,] <- prob(x[i],item,model=model)
-    if(model =="G3PLM" & !s.plot) y2[i,] <- Pi(x[i],matrix(c(item$alpha,item$beta,item$guessing,1),ncol=4))$Pi
-    if(all(model!="SM",model!="G3PLM",!s.plot)) y2[i,] <- Pi(x[i],matrix(c(item$alpha,item$eta),ncol=4),model=model)$Pi
+    if(model =="3PL" & !s.plot) y2[i,] <- Pi(x[i],matrix(c(item$alpha,item$beta,item$guessing,1),ncol=4))$Pi
+    if(all(model!="SM",model!="3PL",!s.plot)) y2[i,] <- Pi(x[i],matrix(c(item$alpha,item$eta),ncol=4),model=model)$Pi
     if(model=='GPCM' & !s.plot) y3[i,] <- unlist(p.(x[i],list(a=item$alpha,b=item$beta,m=3)))
   }
   
@@ -105,10 +105,4 @@ testit <- function(model="GRM",alpha=1,extra=F,s.plot=F){
   }))
 }
 
-testit("G3PLM",1,F,T)
-# 
-# Q <- 1
-# model <- "G3PLM"
-# items <- genItembank(model=model,Q=Q,K=5)
-# prob(theta=rep(0,Q),model=model,items=items)
-# item <- genItembank(model="G3PLM",Q=1,K=1)
+#testit("GPCM",1,F,T)
