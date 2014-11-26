@@ -8,6 +8,9 @@
 # R data files from past sessions
 .Rdata
 
+# R documentation files
+.Rd
+
 # =========================
 # Operating System Files
 # =========================
