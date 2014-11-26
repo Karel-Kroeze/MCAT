@@ -80,15 +80,19 @@ genItembank <- function(Q=2,K=50,model='GPCM',covar=diag(Q),a=list(method="norma
   out$m <- m
   
   # set class and pass along options
+  options <- list(Q=Q,K=K,M=M,model=model,covar=covar,c=c)
+  out <- c(out,options)
   attr(out,"class") <- "MCAT.items"
-  out$options <- list(Q=Q,K=K,M=M,model=model,covar=covar,c=c)
-  out
+  return(invisible(out))
 }
 
 #' Print itembank with some useful detail.
 print.MCAT.items <- function(itembank){
   # TODO: Actually do something useful....
-  for (part in itembank) print(part)
+  for (i in seq_along(itembank)){
+    cat(names(itembank)[i],"\n")
+    print(itembank[[i]])
+  } 
 }
 
 #` Plot itembank with some useful detail.
@@ -101,13 +105,15 @@ plot.MCAT.items <- function(itembank){
 subset.MCAT.items <- function(itembank,ss){
   out <- list()
   nom <- names(itembank)
+  pars <- c("alpha","beta",'eta','guessing','m') # item parameters, everything else is fluff. 
   for (i in 1:length(itembank)){
-    if(nom[i] != "options"){
+    if(nom[i] %in% pars){
       if(!is.vector(itembank[[i]])) out[[nom[i]]] <- matrix(itembank[[i]][ss,],ncol=ncol(itembank[[i]]))
       else out[[nom[i]]] <- itembank[[i]][ss]
+    } else {
+      out[[nom[i]]] <- itembank[[i]]
     }
   }
-  out$options <- itembank$options
-  out$options$subset <- ss
+  out$subset <- ss
   out
 }
