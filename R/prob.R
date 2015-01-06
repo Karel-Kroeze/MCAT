@@ -11,7 +11,7 @@
 #' @return List with two entries, a vector or matrix \code{p} of probabilites per item/category, 
 #' and a vector \code{p0} of probabilities defined as \code{p0 = q = 1 - sum(P_ij)} 
 #' 
-prob <- function(theta=0,items=genItembank(model=model),model="GPCM"){
+prob <- function(theta=0,items,model=items$model){
   # TODO: Check input.
   
   # logistic function
@@ -106,3 +106,4 @@ testit <- function(model="GRM",alpha=1,extra=F,s.plot=F){
 }
 
 #testit("GPCM",1,F,T)
+#MCAT:::testit("3PL",1,T,T)

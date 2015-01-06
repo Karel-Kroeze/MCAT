@@ -4,7 +4,8 @@
 \alias{eapEst}
 \title{EAP estimate of person parameters.}
 \usage{
-eapEst(items, resp, model, prior, ip = 4, debug = FALSE, ...)
+eapEst(items, resp, model = items$model, prior = items$covar, ip = 4,
+  debug = FALSE, ...)
 }
 \arguments{
 \item{items}{Itembank, or a subset of an Itembank. See \code{\link{genItembank}}.}

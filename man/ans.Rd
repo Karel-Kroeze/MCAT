@@ -4,7 +4,7 @@
 \alias{ans}
 \title{Simulate a response (pattern) with a given theta and item(s)}
 \usage{
-ans(theta, items, model = "GPCM")
+ans(theta, items, model = items$model)
 }
 \arguments{
 \item{theta}{Numeric (vector). Vector of length Q, where each element is the theta for the corresponding dimension}

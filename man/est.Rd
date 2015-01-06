@@ -4,8 +4,9 @@
 \alias{est}
 \title{Obtain an ability estimate given a response pattern and item parameters.}
 \usage{
-est(theta, items, resp, method = "BM", model = "GPCM", prior = NULL,
-  threshold = 1e-04, max.iter = 10, debug = FALSE, ip = 10, ...)
+est(theta, items, resp, method = "BM", model = items$model,
+  prior = items$covar, threshold = 1e-04, max.iter = 10, debug = FALSE,
+  ip = 10, ...)
 }
 \arguments{
 \item{theta}{Numeric (vector), initial theta estimate. Defaults to a null vector of length equal to the number of dimensions.}

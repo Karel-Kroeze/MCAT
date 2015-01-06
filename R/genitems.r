@@ -30,16 +30,18 @@ genItembank <- function(Q=2,K=50,model='GPCM',covar=diag(Q),a=list(method="norma
   out <- list()
   
   # alphas
-  alpha <- matrix(rnorm(Q*K),ncol=Q)
+  #alpha <- matrix(rlnorm(Q*K,0,.25),ncol=Q)
+  require(mvtnorm)
+  alpha <- rmvnorm(K,rep(1,Q),covar)
+  # TODO; A way to correlate alpha without making it negative...
   # correlate (eigen decomposition)
-  lambda <- with(eigen(covar), vectors %*% diag(sqrt(values)))
-  alpha <- t(lambda %*% t(alpha))
+  #lambda <- with(eigen(covar), vectors %*% diag(sqrt(values)))
+  #alpha <- t(lambda %*% t(alpha))
   # make lognormal and scale sum(alpha) to 1.
   # NOTE: Is the change in covariance of alpha important?
-  alpha <- exp(alpha)
   # NOTE: What is the effect of scaling? At the very least with Q=2 it gives a perfect correlation...
   # alpha <- t(apply(alpha,1,function(x) x/sum(x)))
-  
+  alpha[which(alpha < 0)] <- 0
   out$alpha <- alpha
   
   #beta/eta/m
@@ -87,6 +89,7 @@ genItembank <- function(Q=2,K=50,model='GPCM',covar=diag(Q),a=list(method="norma
 }
 
 #' Print itembank with some useful detail.
+#' @export
 print.MCAT.items <- function(itembank){
   # TODO: Actually do something useful....
   for (i in seq_along(itembank)){
@@ -95,14 +98,17 @@ print.MCAT.items <- function(itembank){
   } 
 }
 
-#` Plot itembank with some useful detail.
+#' Plot itembank with some useful detail.
+#' @export
 plot.MCAT.items <- function(itembank){
   # TODO: Actually do something useful....
   if(!require(aplpack)) install.packages('aplpack'); require(aplpack)
   plot(faces(itembank$beta))
 }
 
+#' @export
 subset.MCAT.items <- function(itembank,ss){
+  # TODO: fix and properly handle double subsets.
   out <- list()
   nom <- names(itembank)
   pars <- c("alpha","beta",'eta','guessing','m') # item parameters, everything else is fluff. 
@@ -115,5 +121,6 @@ subset.MCAT.items <- function(itembank,ss){
     }
   }
   out$subset <- ss
-  out
+  attr(out,"class") <- "MCAT.items"
+  return(out)
 }

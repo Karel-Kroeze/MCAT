@@ -15,8 +15,8 @@
 #' @return list with two entries; theta contains the current theta estimate, and SE the standard error of the estimate.
 #' @export
 est <- function(theta, items, resp, 
-                method = "BM", model = "GPCM",
-                prior = NULL, threshold = 1e-4, max.iter = 10,
+                method = "BM", model = items$model,
+                prior = items$covar, threshold = 1e-4, max.iter = 10,
                 debug = FALSE, ip = 10,...){
   if (method == "ML") prior <- NULL
   if (method == "MAP") method <- "BM"
@@ -26,15 +26,24 @@ est <- function(theta, items, resp,
     iter <- 0
     delta <- 1
     # Newton-Rhapson approximation.
-    while(mean(abs(delta)) > threshold & iter <= max.iter){
-      theta0 <- theta
-      theta <- with(deriv(theta,items,resp,model,prior),
-                    theta0 - solve(d2) %*% d1)
-      delta <- theta - theta0
-      iter <- iter + 1
-      if(debug) cat('N-R>',iter,':',theta,"(",delta,")\n")
-    }
-    out <- theta
+    out <- tryCatch({
+      theta.last <- theta
+      while(mean(abs(delta)) > threshold & iter <= max.iter){
+        theta0 <- theta
+        theta <- with(deriv(theta,items,resp,model,prior),
+                      theta0 - solve(d2) %*% d1)
+        delta <- theta - theta0
+        iter <- iter + 1
+        if(debug) cat('N-R>',iter,':',theta,"(",delta,")\n")
+      }
+      theta
+    }, warning = function(w) {
+      cat(geterrmessage())
+      return(theta.last)
+    }, error = function(e) {
+      cat(geterrmessage())
+      return(theta.last)
+    })
   }
   return(as.vector(out))
 }

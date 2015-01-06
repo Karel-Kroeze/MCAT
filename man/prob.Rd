@@ -4,7 +4,7 @@
 \alias{prob}
 \title{Probability of answer given item and theta.}
 \usage{
-prob(theta = 0, items = genItembank(model = model), model = "GPCM")
+prob(theta = 0, items, model = items$model)
 }
 \arguments{
 \item{theta}{Numeric, vector of length Q ability parameters.}

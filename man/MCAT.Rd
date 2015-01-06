@@ -4,7 +4,7 @@
 \alias{MCAT}
 \title{Simulate an MCAT for a single person.}
 \usage{
-MCAT(person, items, criteria = NULL, debug = FALSE)
+MCAT(person, items, st = 5, le = 50, criteria = NULL, debug = FALSE)
 }
 \arguments{
 \item{person}{List of person parameters and related information. See \code{\link{MCAT::person}}.}

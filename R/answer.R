@@ -4,7 +4,7 @@
 #' @param items Itembank, or a subset of an itembank. See \code{\link{genItembank}} and \code{\link{subset.MCAT.items}}
 #' @return integer (vector) of simulated response(s).
 #' @export
-ans <- function(theta,items,model="GPCM"){
+ans <- function(theta,items,model=items$model){
   Pij <- prob(theta = theta,items = items,model = model)
   cp <- Pij
   for (i in 1:ncol(cp)) cp[,i] <- apply(matrix(Pij[,1:i],ncol=i),1,sum)

@@ -14,7 +14,7 @@
 #' @param quad Integer, number of quadrature points \bold{per dimension}. Note that the total number of quadrature points is \code{quad^Q}, where Q is the number of latent dimensions.
 #' @return estimate A vector of latent ability estimates.
 #' @seealso eapSE.
-eapEst <- function(items, resp, model, prior, ip = 4, debug = FALSE,...){
+eapEst <- function(items, resp, model = items$model, prior = items$covar, ip = 4, debug = FALSE,...){
   # initialize Gauss quadrature points
   # TODO: This only needs doing once for the whole test, should happen on test init when any estimator is set to EAP.
   GH <- init.gauss(ip,prior)
@@ -26,7 +26,7 @@ eapEst <- function(items, resp, model, prior, ip = 4, debug = FALSE,...){
 
 
 # Likelihood
-LL <- function(theta,items,resp,model){
+LL <- function(theta,items,resp,model = items$model){
   P <- prob(theta,items,model)
   if(model == "3PL"){
     out <- sum(log(P[,1]^(1-resp)) + log(P[,2]^(resp)))
@@ -156,7 +156,7 @@ eval.gauss <- function(FUN = function(x) 0,X=NULL,W=NULL,debug=FALSE,...){
     box()
   }
   if(debug & ncol(X) == 1){
-    plot(X,f,type='l')
+    plot(X,f,type='l',xlim=c(-3,6))
     print(f)
   }
   
