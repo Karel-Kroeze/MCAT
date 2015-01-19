@@ -78,21 +78,3 @@ info <- function(theta, items, method="FI", model=items$model, prior=items$prior
   return(out)
 }
 
-next.item <- function(theta,items,responded,available=(1:items$K)[-responded],method="FI",model=items$model,prior=items$prior,debug=FALSE) {
-  I <- as.numeric(rep(NA,items$K))
-  if (method == "FI" | method == "PFI"){
-    # info so far
-    I0 <- info(theta,subset(items,responded),method,model,prior)
-    # calc det((P)FI) for available items.
-    for (i in available) {
-      I[i] <- det(info(theta,subset(items,i),"FI",model,prior) + I0) # FI because prior is included in I0
-    }
-    #print(I)
-  }
-  
-  if(debug) print(available)
-  if(debug) print(responded)
-  k <- which(I == max(I,na.rm=TRUE))
-  if (k < 0) k <- sample(available,1) # TODO: this is a quick hack to always return something, I'm sure we can do better.
-  return(k)
-}

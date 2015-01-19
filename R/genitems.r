@@ -84,13 +84,13 @@ genItembank <- function(Q=2,K=50,model='GPCM',covar=diag(Q),a=list(method="norma
   # set class and pass along options
   options <- list(Q=Q,K=K,M=M,model=model,covar=covar,c=c)
   out <- c(out,options)
-  attr(out,"class") <- "MCAT.items"
+  attr(out,"class") <- "MCAT_itembank"
   return(invisible(out))
 }
 
 #' Print itembank with some useful detail.
 #' @export
-print.MCAT.items <- function(itembank){
+print.MCAT_itembank <- function(itembank){
   # TODO: Actually do something useful....
   for (i in seq_along(itembank)){
     cat(names(itembank)[i],"\n")
@@ -100,14 +100,18 @@ print.MCAT.items <- function(itembank){
 
 #' Plot itembank with some useful detail.
 #' @export
-plot.MCAT.items <- function(itembank){
+plot.MCAT_itembank <- function(itembank){
   # TODO: Actually do something useful....
   if(!require(aplpack)) install.packages('aplpack'); require(aplpack)
   plot(faces(itembank$beta))
 }
 
+#' Create a subset of the itembank containing the given items.
+#' @param itembank MCAT_items, list with class MCAT_items, see genItembank
+#' @param ss, vector of integers, indeces of item(s) to be included in the subset.
+#' @return MCAT_itembank, subset containing item(s) ss and all the other bits and pieces that make an itembank.
 #' @export
-subset.MCAT.items <- function(itembank,ss){
+subset.MCAT_itembank <- function(itembank,ss){
   # TODO: fix and properly handle double subsets.
   out <- list()
   nom <- names(itembank)
@@ -121,6 +125,8 @@ subset.MCAT.items <- function(itembank,ss){
     }
   }
   out$subset <- ss
-  attr(out,"class") <- "MCAT.items"
+  attr(out,"class") <- "MCAT_itembank"
   return(out)
 }
+
+## TODO: think on how to deal with nested subset calls, currently this fails massively (indices incorrect)

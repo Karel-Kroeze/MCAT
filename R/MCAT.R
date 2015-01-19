@@ -2,14 +2,14 @@
 #' 
 #' Wrapper to simulate an MCAT with the given criteria for a given person and itembank.
 #' 
-#' DETAILS (note that only PFI/FI are implemented, and only for 3PL)
+#' DETAILS (note that only PFI/FI objective functions are implemented, and only for 3PL)
 #' 
 #' @param person List of person parameters and related information. See \code{\link{MCAT::person}}.
 #' @param itembank List of item parameters and related information. See \code{\link{MCAT::genItembank}}.
 #' @param criteria List of test criteria as defined by \code{\link{MCAT::MCAT}}.
 #' @return person
 #' @export
-MCAT <- function(person, items, st = 5, le = 50, criteria = NULL,debug=FALSE){
+SimulateMCAT <- function(person, items, st = 5, le = 50, criteria = NULL,debug=FALSE){
   if (is.null(criteria)){ # very simple defaults; TODO: create proper model check helper function. (also for items / person).
     criteria$model <- items$model
     criteria$estimate$method <- "BM"
@@ -60,5 +60,56 @@ MCAT <- function(person, items, st = 5, le = 50, criteria = NULL,debug=FALSE){
   person$deviation <- person$theta - person$true
   return(person)
 }
-#items <- genItembank(Q=2,model='3PL',K=100)
-#MCAT(list(true=rnorm(2)),items,debug=FALSE)
+
+## TODO: SimulateMCAT is outdated, will need adjustment for currect OO environment.
+
+#' Initialise a person object for use in MCAT functions.
+#' 
+#' @param Items MCAT_items object, see \code{\link{genItembank}}. REQUIRED.
+#' @param Theta numeric (vector) of ability levels, used to generate answers in simulations.
+#' @return Person person object, for use in \code{\link{MCAT:::MCAT}} and other functions.
+#' @export
+initPerson <- function(items, theta=rep(0,items$Q)){
+  person <- list()
+  person$resp <- rep(NA,items$K) 
+  person$done <- numeric(0)
+  person$avail <- 1:items$K
+  person$theta <- theta
+  person$estimate <- theta
+  person$var <- diag(items$Q) * 100
+  person$prior <- diag(items$Q)
+  attr(person,"class") <- "MCAT_person"
+  return(person)
+}
+
+## TODO: fix person init. Is it even needed, really?
+## TODO: methods for person. print, plot, fit, etc.
+
+#' Initialise an itembank, for use in MCAT functions.
+#' 
+#' @export
+initItembank <- function(){
+  
+}
+
+
+#' Initialise an MCAT object. This is the main test object, defining an MCAT. It includes an itembank, model, estimators and items selection criteria to be used,
+#' as well as any constraints and starting/stopping criteria.
+#' 
+#' @param items MCAT_items object, see \code{\link{genItembank}} for a simulated itembank, and initItembank for using an existing itembank. Defaults to a simulated itembank.
+#' @param model string, can be either "3PL", "GPCM", "GRM" or "SM". Defaults to "3PL".
+#' @export
+initMCAT <- function(items = genItembank(model=model), model="3PL", est="BM", itemSelection="PFI", start=list(type="random",n=5), stop=list(type="length",n=30), constraints = NULL){
+  MCAT <- list()
+  MCAT$items <- items
+  MCAT$model <- model
+  MCAT$est <- est
+  MCAT$itemSelection <- itemSelection
+  MCAT$start <- start
+  MCAT$stop <- stop
+  MCAT$constraints <- constraints
+  attr(MCAT,"class") <- "MCAT"
+  return(MCAT)
+}
+
+## TODO: Catch input errors.
