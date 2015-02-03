@@ -5,7 +5,7 @@
 #' Details
 #' 
 #' @param theta Numeric (vector), initial theta estimate. Defaults to a null vector of length equal to the number of dimensions.
-#' @param items Itembank, see \code{\link{genItembank}}.
+#' @param items Subset of itembank that has been answered, see \code{\link{genItembank}}.
 #' @param resp Response pattern, see \code{\link{ans}}.
 #' @param method String, valid values are "ML", "EAP", and "MAP" or "BM". Defaults to "BM".
 #' @param model String, valid values are "3PL", "GRM", "SM" or "GPCM". Defaults to "GPCM".
@@ -38,10 +38,10 @@ est <- function(theta, items, resp,
       }
       theta
     }, warning = function(w) {
-      cat(geterrmessage())
+      cat("\n",geterrmessage())
       return(theta.last)
     }, error = function(e) {
-      cat(geterrmessage())
+      cat("\n",geterrmessage())
       return(theta.last)
     })
   }

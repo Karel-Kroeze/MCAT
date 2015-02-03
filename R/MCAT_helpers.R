@@ -40,19 +40,46 @@ next_item <- function(MCAT,person,debug=FALSE) {
 }
 
 #' Update person object after a response. Update administrative variables, and calculate new estimates and variance.
-#' @param MCAT MCAT test object, see \code{\link{initMCAT}}.
 #' @param person MCAT_person object, see \code{\link{initPerson}}
+#' @param MCAT MCAT test object, see \code{\link{initMCAT}}.
 #' @param item integer, index of item responded to.
 #' @param answer integer, actual response.
 #' @param ... parameters passed onto the estimator. threshold and max.iter influence BM and ML Newton-Rhapson estimation routine, ip sets the number of quadrature points per dimension in EAP estimation.
 #' @return MCAT_person updated person object.
 #' @export
-update_response <- function(MCAT,person,item,answer,...) {
+update.MCAT_person <- function(person,MCAT,item,answer) {
   person$avail <- person$avail[person$avail != item]
   person$done <- c(person$done,item)
   person$resp[item] <- answer
-  person$estimate <- est(person$estimate,MCAT$items,person$resp,MCAT$est,MCAT$model,person$prior,...)
-  person$var <- info(person$estimate,subset(MCAT$items,person$done),'PFI')^(-1) 
-  # TODO: implement proper variance function, this is a hacky BM var for all types. 
+  
   return(person)
 }
+
+## TODO: figure out method dispatch with arguments.
+# #' @export
+# estimate <- function(x) UseMethod("estimate")
+
+#' @export
+estimate <- function(person,MCAT,...) {
+  person$estimate <- est(person$estimate,subset(MCAT$items,person$done),person$resp[person$done],MCAT$est,MCAT$model,...)
+  person$var <- info(person$estimate,subset(MCAT$items,person$done),'PFI')^(-1) 
+  
+  # TODO: implement proper variance function, this is a hacky BM var for all types.   
+  return(person)
+}
+
+
+items <- genItembank(model="3PL")
+person <- initPerson(items)
+test <- initMCAT(items)
+
+for (i in 1:30){
+ person <- update(person,test,i,ans(person$theta,subset(items,i),'3PL'))
+ person <- estimate(person,test) 
+ print(c(person$estimate,diag(person$var)))
+}
+
+
+
+
+

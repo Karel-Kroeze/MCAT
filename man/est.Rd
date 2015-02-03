@@ -11,7 +11,7 @@ est(theta, items, resp, method = "BM", model = items$model,
 \arguments{
 \item{theta}{Numeric (vector), initial theta estimate. Defaults to a null vector of length equal to the number of dimensions.}
 
-\item{items}{Itembank, see \code{\link{genItembank}}.}
+\item{items}{Subset of itembank that has been answered, see \code{\link{genItembank}}.}
 
 \item{resp}{Response pattern, see \code{\link{ans}}.}
 
